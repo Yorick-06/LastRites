@@ -1,0 +1,11 @@
+{
+	"required": true,
+	"package": "cz.yorick.mixin",
+	"compatibilityLevel": "JAVA_17",
+	"mixins": [
+		"BundleAccessor"
+	],
+	"injectors": {
+		"defaultRequire": 1
+	}
+}

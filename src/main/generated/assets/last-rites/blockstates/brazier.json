@@ -1,0 +1,31 @@
+{
+  "variants": {
+    "fire=fire,urn=finished": {
+      "model": "last-rites:block/brazier_finished_fire"
+    },
+    "fire=fire,urn=none": {
+      "model": "last-rites:block/brazier_fire"
+    },
+    "fire=fire,urn=urn": {
+      "model": "last-rites:block/brazier_urn_fire"
+    },
+    "fire=none,urn=finished": {
+      "model": "last-rites:block/brazier_finished"
+    },
+    "fire=none,urn=none": {
+      "model": "last-rites:block/brazier"
+    },
+    "fire=none,urn=urn": {
+      "model": "last-rites:block/brazier_urn"
+    },
+    "fire=soul_fire,urn=finished": {
+      "model": "last-rites:block/brazier_finished_soul_fire"
+    },
+    "fire=soul_fire,urn=none": {
+      "model": "last-rites:block/brazier_soul_fire"
+    },
+    "fire=soul_fire,urn=urn": {
+      "model": "last-rites:block/brazier_urn_soul_fire"
+    }
+  }
+}

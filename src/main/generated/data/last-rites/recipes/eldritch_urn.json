@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "S": {
+      "item": "minecraft:netherite_scrap"
+    }
+  },
+  "pattern": [
+    "S S",
+    "S S",
+    "SSS"
+  ],
+  "result": {
+    "item": "last-rites:eldritch_urn"
+  },
+  "show_notification": true
+}

@@ -1,0 +1,39 @@
+{
+	"schemaVersion": 1,
+	"id": "last-rites",
+	"version": "${version}",
+	"name": "Last Rites",
+	"description": "",
+	"authors": [],
+	"contact": {},
+	"license": "ARR",
+	"icon": "assets/last-rites/icon.png",
+	"environment": "*",
+	"entrypoints": {
+		"main": [
+			"cz.yorick.LastRites"
+		],
+		"client": [
+			"cz.yorick.LastRitesClient"
+		],
+		"fabric-datagen": [
+			"cz.yorick.LastRitesDataGenerator"
+		]
+	},
+	"mixins": [
+		"last-rites.mixins.json",
+		{
+			"config": "last-rites.client.mixins.json",
+			"environment": "client"
+		}
+	],
+	"depends": {
+		"fabricloader": ">=0.16.14",
+		"minecraft": "~1.20.1",
+		"java": ">=17",
+		"fabric-api": "*"
+	},
+	"suggests": {
+		"another-mod": "*"
+	}
+}

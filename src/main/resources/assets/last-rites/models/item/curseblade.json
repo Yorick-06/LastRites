@@ -1,0 +1,26 @@
+{
+  "parent": "minecraft:item/handheld",
+  "overrides": [
+    {
+      "model": "last-rites:item/curseblade2",
+      "predicate": {
+        "last-rites:stage": 0.5
+      }
+    },
+    {
+      "model": "last-rites:item/curseblade3",
+      "predicate": {
+        "last-rites:stage": 0.75
+      }
+    },
+    {
+      "model": "last-rites:item/curseblade4",
+      "predicate": {
+        "last-rites:stage": 1
+      }
+    }
+  ],
+  "textures": {
+    "layer0": "last-rites:item/curseblade1"
+  }
+}
