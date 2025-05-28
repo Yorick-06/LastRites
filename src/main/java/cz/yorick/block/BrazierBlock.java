@@ -8,19 +8,27 @@ import net.minecraft.block.entity.BlockEntityTicker;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.BucketItem;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.ItemUsage;
 import net.minecraft.item.Items;
+import net.minecraft.particle.ParticleTypes;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.sound.SoundCategory;
+import net.minecraft.sound.SoundEvents;
 import net.minecraft.state.StateManager;
 import net.minecraft.state.property.EnumProperty;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
+import net.minecraft.util.ItemScatterer;
 import net.minecraft.util.StringIdentifiable;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.random.Random;
 import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.util.shape.VoxelShapes;
 import net.minecraft.world.BlockView;
@@ -63,6 +71,7 @@ public class BrazierBlock extends BlockWithEntity {
         ItemStack handStack = player.getStackInHand(hand);
         //light the brazier
         if(handStack.isOf(Items.FLINT_AND_STEEL) && state.get(FIRE) != FireType.FIRE) {
+            world.playSound(player, pos, SoundEvents.ITEM_FLINTANDSTEEL_USE, SoundCategory.BLOCKS, 1.0F, world.getRandom().nextFloat() * 0.4F + 0.8F);
             if (player instanceof ServerPlayerEntity serverPlayer) {
                 player.getStackInHand(hand).damage(1, serverPlayer, p -> p.sendToolBreakStatus(hand));
             }
@@ -104,8 +113,30 @@ public class BrazierBlock extends BlockWithEntity {
 
     @Override
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(World world, BlockState state, BlockEntityType<T> type) {
-        // Make sure to check world.isClient if you only want to tick only on serverside.
         return checkType(type, LastRites.BRAZIER_BLOCK_ENTITY, BrazierBlockEntity::tick);
+    }
+
+    @Override
+    public void onBreak(World world, BlockPos pos, BlockState state, PlayerEntity player) {
+        ItemStack urn = ((BrazierBlockEntity)world.getBlockEntity(pos)).takeUrn();
+        if(!urn.isEmpty()) {
+            Vec3d vec3d = pos.toCenterPos();
+            ItemScatterer.spawn(world, vec3d.getX(), vec3d.getY(), vec3d.getZ(), urn);
+        }
+
+        super.onBreak(world, pos, state, player);
+    }
+
+    @Override
+    public void randomDisplayTick(BlockState state, World world, BlockPos pos, Random random) {
+        if(state.get(FIRE) != FireType.NONE) {
+            Vec3d vec3d = pos.toCenterPos();
+            if (random.nextInt(24) == 0) {
+                world.playSound(vec3d.getX(), vec3d.getY(), vec3d.getZ(), SoundEvents.BLOCK_FIRE_AMBIENT, SoundCategory.BLOCKS, 1.0F + random.nextFloat(), random.nextFloat() * 0.7F + 0.3F, false);
+            }
+
+            world.addParticle(ParticleTypes.LARGE_SMOKE, vec3d.getX(), vec3d.getY(), vec3d.getZ(), 0.0, 0.0, 0.0);
+        }
     }
 
     private static final VoxelShape EMPTY_BRAZIER = VoxelShapes.union(
@@ -127,10 +158,12 @@ public class BrazierBlock extends BlockWithEntity {
             Block.createCuboidShape(5.5, 14, 5.5, 10.5, 16, 10.5)
     );
 
+    @Override
     public VoxelShape getOutlineShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context) {
         return hasUrn(state) ? BRAZIER_WITH_URN : EMPTY_BRAZIER;
     }
 
+    @Override
     public VoxelShape getRaycastShape(BlockState state, BlockView world, BlockPos pos) {
         return hasUrn(state) ? BRAZIER_WITH_URN : EMPTY_BRAZIER;
     }

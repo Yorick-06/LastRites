@@ -1,0 +1,4 @@
+// 1.20.1	2025-05-28T10:35:51.1602719	Last Rites/Tags for minecraft:block
+32355364ea88ccfd7d9c7bfcab8af77ed447abcd data\minecraft\tags\blocks\mineable\shovel.json
+d9a7874b48dc6511f877ad3cac0ae16dcf8e5cfa data\minecraft\tags\blocks\mineable\pickaxe.json
+d9a7874b48dc6511f877ad3cac0ae16dcf8e5cfa data\minecraft\tags\blocks\needs_stone_tool.json

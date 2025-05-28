@@ -1,10 +1,12 @@
-// 1.20.1	2025-05-26T12:13:12.9657685	Last Rites/Model Definitions
+// 1.20.1	2025-05-28T10:35:51.15827	Last Rites/Model Definitions
+370e188fe10655ff23a79a31729d7dc84a63859e assets\last-rites\blockstates\antimagic_catalyst.json
 a6d3437a67c2ac1e326f27dc1f63a9e79e24f1e7 assets\last-rites\models\item\curseblade2.json
 48d7ce13609e16e70866a19e069fce374aca0e0f assets\last-rites\blockstates\brazier.json
 906fef0e3312bbeaf064fecacc2fd2513c4333b7 assets\last-rites\models\item\brazier.json
+199a00874029f0d25f5d01a3d88d228ff018cb11 assets\last-rites\models\item\antimagic_catalyst.json
 fd98cf9a606f0a61659e7c96d6be152c1d5bfff5 assets\last-rites\blockstates\soul_ash.json
 0e8132f6de36e5d838c9a103b4674a23857fbe7b assets\last-rites\models\item\curseblade3.json
-faaf9fd4e26e8edfae86e584f2e7325e089e8005 assets\last-rites\models\item\clay_urn.json
 aee42c553d021f30a432c565b33b8da0f8610650 assets\last-rites\models\item\eldritch_urn.json
+faaf9fd4e26e8edfae86e584f2e7325e089e8005 assets\last-rites\models\item\clay_urn.json
 15819422f755ae8eaf0f15a8293862f25bf0f162 assets\last-rites\models\item\soul_ash.json
 309effee92820a22e9df60394917ddbc4923c3ca assets\last-rites\models\item\curseblade4.json

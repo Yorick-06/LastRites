@@ -17,7 +17,7 @@ import java.util.Optional;
 public class BrazierBlockEntity extends BlockEntity {
     private ItemStack urn = ItemStack.EMPTY;
     private int progress = 0;
-    private final int maxProgress = 200;
+    private final int maxProgress = 20 * 60;
     public BrazierBlockEntity(BlockPos pos, BlockState state) {
         super(LastRites.BRAZIER_BLOCK_ENTITY, pos, state);
     }

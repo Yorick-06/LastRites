@@ -1,7 +1,11 @@
 package cz.yorick;
 
+import cz.yorick.datagen.BlockLootTableGenerator;
 import cz.yorick.datagen.ModelGenerator;
 import cz.yorick.datagen.RecipeGenerator;
+import cz.yorick.datagen.BlockTagGenerator;
+import cz.yorick.item.ClayUrnItem;
+import cz.yorick.item.CurseBladeItem;
 import net.fabricmc.fabric.api.datagen.v1.DataGeneratorEntrypoint;
 import net.fabricmc.fabric.api.datagen.v1.FabricDataGenerator;
 import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
@@ -16,6 +20,8 @@ public class LastRitesDataGenerator implements DataGeneratorEntrypoint {
 		pack.addProvider(RecipeGenerator::new);
 		pack.addProvider(ModelGenerator::new);
 		pack.addProvider(LastRitesDataGenerator::genLang);
+		pack.addProvider(BlockLootTableGenerator::new);
+		pack.addProvider(BlockTagGenerator::new);
 	}
 
 	private static FabricLanguageProvider genLang(FabricDataOutput dataOutput) {
@@ -30,7 +36,14 @@ public class LastRitesDataGenerator implements DataGeneratorEntrypoint {
 				LastRites.getOwned(Registries.BLOCK)
 						.forEach(block -> translationBuilder.add(block, autoTranslate(block.getTranslationKey())));
 
+				translationBuilder.add(LastRites.GRIEF_EFFECT, autoTranslate(LastRites.GRIEF_EFFECT.getTranslationKey()));
+				translationBuilder.add(LastRites.DAMNED_ONE_ENTITY_TYPE, autoTranslate(LastRites.DAMNED_ONE_ENTITY_TYPE.getTranslationKey()));
+
 				translationBuilder.add("item_group.last-rites", "Last Rites");
+
+				translationBuilder.add(CurseBladeItem.SOUL_ASH_TRANSLATION_KEY, autoTranslate(CurseBladeItem.SOUL_ASH_TRANSLATION_KEY));
+				translationBuilder.add(CurseBladeItem.BONUS_REACH_TRANSLATION_KEY, autoTranslate(CurseBladeItem.BONUS_REACH_TRANSLATION_KEY));
+				translationBuilder.add(ClayUrnItem.EMPTY_TRANSLATION_KEY, autoTranslate(ClayUrnItem.EMPTY_TRANSLATION_KEY));
 			}
 		};
 	}

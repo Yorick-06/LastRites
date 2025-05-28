@@ -2,17 +2,13 @@ package cz.yorick.block;
 
 import cz.yorick.LastRites;
 import cz.yorick.item.ClayUrnItem;
-import cz.yorick.util.GriefStatusEffect;
+import cz.yorick.util.CustomStatusEffect;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.ShapeContext;
-import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.entity.effect.StatusEffectInstance;
-import net.minecraft.entity.effect.StatusEffectUtil;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemPlacementContext;
-import net.minecraft.item.ItemStack;
-import net.minecraft.potion.PotionUtil;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.state.StateManager;
 import net.minecraft.state.property.BooleanProperty;
@@ -46,7 +42,7 @@ public class ClayUrnBlock extends Block {
     }
 
     @Override
-    public void afterBreak(World world, PlayerEntity player, BlockPos pos, BlockState state, @Nullable BlockEntity blockEntity, ItemStack tool) {
+    public void onBreak(World world, BlockPos pos, BlockState state, PlayerEntity player) {
         if(state.get(FILLED)) {
             if(world instanceof ServerWorld serverWorld) {
                 Vec3d origin = pos.toCenterPos();
@@ -58,8 +54,10 @@ public class ClayUrnBlock extends Block {
             }
 
             //2002 == non-instant potion break
-            world.syncWorldEvent(2002, pos, GriefStatusEffect.COLOR);
+            world.syncWorldEvent(2002, pos, CustomStatusEffect.COLOR);
         }
+
+        super.onBreak(world, pos, state, player);
     }
 
     private static final VoxelShape SHAPE = VoxelShapes.union(

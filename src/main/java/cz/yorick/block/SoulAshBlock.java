@@ -21,6 +21,7 @@ import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.random.Random;
 import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.util.shape.VoxelShapes;
@@ -34,7 +35,6 @@ import java.util.Objects;
 
 public class SoulAshBlock extends FallingBlock {
     public static final IntProperty LAYERS = IntProperty.of("layers", 1, 8);
-    public static final BooleanProperty BURN_TIME = BooleanProperty.of("burn_time");
     private static final VoxelShape[] LAYERS_TO_SHAPE = new VoxelShape[] {
             VoxelShapes.empty(),
             Block.createCuboidShape(0.0, 0.0, 0.0, 16.0, 2.0, 16.0),
@@ -49,7 +49,7 @@ public class SoulAshBlock extends FallingBlock {
 
     public SoulAshBlock(Settings settings) {
         super(settings);
-        this.setDefaultState(this.stateManager.getDefaultState().with(LAYERS, 1).with(BURN_TIME, false));
+        this.setDefaultState(this.stateManager.getDefaultState().with(LAYERS, 1));
     }
 
     @Override
@@ -127,27 +127,16 @@ public class SoulAshBlock extends FallingBlock {
 
     @Override
     protected void appendProperties(StateManager.Builder<Block, BlockState> builder) {
-        builder.add(LAYERS, BURN_TIME);
+        builder.add(LAYERS);
     }
 
     @Override
     public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
         if(player.getStackInHand(hand).isOf(Items.FLINT_AND_STEEL) && state.get(LAYERS) > 3) {
             if(player instanceof ServerPlayerEntity serverPlayer && world instanceof ServerWorld serverWorld) {
+                world.playSound(player, pos, SoundEvents.ITEM_FLINTANDSTEEL_USE, SoundCategory.BLOCKS, 1.0F, world.getRandom().nextFloat() * 0.4F + 0.8F);
                 player.getStackInHand(hand).damage(1, serverPlayer, p -> p.sendToolBreakStatus(hand));
-                int layers = state.get(LAYERS);
-                while (layers > 1) {
-                    LastRites.DAMNED_ONE_ENTITY_TYPE.spawn(serverWorld, null, spawned -> {
-                        spawned.setOwner(player);
-                    }, pos, SpawnReason.TRIGGERED, false, false);
-                    layers -= 4;
-                }
-
-                if(layers <= 0) {
-                    world.setBlockState(pos, Blocks.AIR.getDefaultState());
-                } else {
-                    world.setBlockState(pos, state.with(LAYERS, layers));
-                }
+                animate(serverWorld, pos, state, player);
             }
 
             return ActionResult.SUCCESS;
@@ -156,16 +145,19 @@ public class SoulAshBlock extends FallingBlock {
         return super.onUse(state, world, pos, player, hand, hit);
     }
 
-    @Override
-    public void randomDisplayTick(BlockState state, World world, BlockPos pos, Random random) {
-        if (state.get(BURN_TIME)) {
-            if (random.nextInt(10) == 0) {
-                world.playSound((double)pos.getX() + 0.5, (double)pos.getY() + 0.5, (double)pos.getZ() + 0.5, SoundEvents.BLOCK_CAMPFIRE_CRACKLE, SoundCategory.BLOCKS, 0.5F + random.nextFloat(), random.nextFloat() * 0.7F + 0.6F, false);
-            }
+    public static void animate(ServerWorld world, BlockPos pos, BlockState state, PlayerEntity owner) {
+        int layers = state.get(LAYERS);
+        while (layers > 1) {
+            LastRites.DAMNED_ONE_ENTITY_TYPE.spawn(world, null, spawned -> {
+                spawned.setOwner(owner);
+            }, pos, SpawnReason.TRIGGERED, false, false);
+            layers -= 4;
+        }
 
-            for(int i = 0; i < random.nextInt(1) + 1; ++i) {
-                world.addParticle(ParticleTypes.SOUL_FIRE_FLAME, (double)pos.getX() + 0.5, (double)pos.getY() + 0.5, (double)pos.getZ() + 0.5, random.nextFloat() / 2.0F, 5.0E-5, random.nextFloat() / 2.0F);
-            }
+        if(layers <= 0) {
+            world.setBlockState(pos, Blocks.AIR.getDefaultState());
+        } else {
+            world.setBlockState(pos, state.with(LAYERS, layers));
         }
     }
 
@@ -177,5 +169,8 @@ public class SoulAshBlock extends FallingBlock {
         } else {
             world.removeBlock(pos, false);
         }
+
+        Vec3d vec3d = pos.toCenterPos();
+        world.playSound(vec3d.getX(), vec3d.getY(), vec3d.getZ(), state.getBlock().getSoundGroup(state).getBreakSound(), SoundCategory.BLOCKS, 1.0F + world.getRandom().nextFloat(), world.getRandom().nextFloat() * 0.7F + 0.3F, false);
     }
 }

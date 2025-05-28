@@ -19,6 +19,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 
 public class ClayUrnItem extends BlockItem {
+    public static String EMPTY_TRANSLATION_KEY = "tooltip." + LastRites.MOD_ID + ".empty";
     public ClayUrnItem(Block block, Item.Settings settings) {
         super(block, settings);
     }
@@ -50,7 +51,7 @@ public class ClayUrnItem extends BlockItem {
     @Override
     public void appendTooltip(ItemStack stack, @Nullable World world, List<Text> tooltip, TooltipContext context) {
         if(!isFilled(stack)) {
-            tooltip.add(Text.literal("Empty"));
+            tooltip.add(Text.translatable(EMPTY_TRANSLATION_KEY));
         }
     }
 
@@ -63,7 +64,12 @@ public class ClayUrnItem extends BlockItem {
             return ActionResult.SUCCESS;
         }
 
-        return super.useOnBlock(context);
+        //only place when sneaking
+        if(context.getPlayer().isSneaking() || !isFilled(context.getStack())) {
+            return super.useOnBlock(context);
+        }
+
+        return ActionResult.PASS;
     }
 
     public void fill(ItemStack stack, PlayerEntity player) {

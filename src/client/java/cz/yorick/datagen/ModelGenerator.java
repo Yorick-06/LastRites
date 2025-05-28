@@ -1,6 +1,7 @@
 package cz.yorick.datagen;
 
 import cz.yorick.LastRites;
+import cz.yorick.block.AntimagicCatalystBlock;
 import cz.yorick.block.BrazierBlock;
 import cz.yorick.block.SoulAshBlock;
 import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
@@ -16,6 +17,7 @@ public class ModelGenerator extends FabricModelProvider {
     public void generateBlockStateModels(BlockStateModelGenerator blockStateModelGenerator) {
         registerAsh(blockStateModelGenerator);
         registerBrazier(blockStateModelGenerator);
+        registerAntimagicCatalyst(blockStateModelGenerator);
     }
 
     private void registerAsh(BlockStateModelGenerator blockStateModelGenerator) {
@@ -43,6 +45,22 @@ public class ModelGenerator extends FabricModelProvider {
                                     }
 
                                     return BlockStateVariant.create().put(VariantSettings.MODEL, ModelIds.getBlockSubModelId(LastRites.BRAZIER, suffix));
+                                }
+                        )
+                )
+        );
+    }
+
+    private void registerAntimagicCatalyst(BlockStateModelGenerator blockStateModelGenerator) {
+        blockStateModelGenerator.blockStateCollector.accept(
+                VariantsBlockStateSupplier.create(LastRites.ANTIMAGIC_CATALYST).coordinate(
+                        BlockStateVariantMap.create(AntimagicCatalystBlock.ACTIVE).register(
+                                active -> {
+                                    if(active) {
+                                        return BlockStateVariant.create().put(VariantSettings.MODEL, ModelIds.getBlockSubModelId(LastRites.ANTIMAGIC_CATALYST, "_active"));
+                                    }
+
+                                return BlockStateVariant.create().put(VariantSettings.MODEL, ModelIds.getBlockModelId(LastRites.ANTIMAGIC_CATALYST));
                                 }
                         )
                 )

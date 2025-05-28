@@ -19,6 +19,7 @@ import net.minecraft.item.ToolMaterial;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
+import net.minecraft.util.Formatting;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
@@ -26,6 +27,8 @@ import java.util.List;
 import java.util.UUID;
 
 public class CurseBladeItem extends SwordItem {
+    public static final String SOUL_ASH_TRANSLATION_KEY = "tooltip." + LastRites.MOD_ID + ".soul_ash";
+    public static final String BONUS_REACH_TRANSLATION_KEY = "tooltip." + LastRites.MOD_ID + ".bonus_reach";
     private static final int MAX_LAYERS = 16;
     private static final UUID STAGE_BONUS_UUID = UUID.fromString("44ee2e6e-ad5e-4af1-9cb8-cad57d20063f");
     public CurseBladeItem(ToolMaterial toolMaterial, int attackDamage, float attackSpeed, Settings settings) {
@@ -69,7 +72,12 @@ public class CurseBladeItem extends SwordItem {
 
     @Override
     public void appendTooltip(ItemStack stack, @Nullable World world, List<Text> tooltip, TooltipContext context) {
-        tooltip.add(Text.literal("Ash: " + getLayers(stack)));
+        tooltip.add(Text.translatable(SOUL_ASH_TRANSLATION_KEY).append(": " + getLayers(stack)).formatted(Formatting.GRAY));
+        tooltip.add(Text.translatable(BONUS_REACH_TRANSLATION_KEY).append(": " + getBonusReach(stack)).formatted(Formatting.GRAY));
+    }
+
+    public static float getBonusReach(ItemStack stack) {
+        return (getStage(stack) - 2) * 0.5F;
     }
 
     public static int getStage(ItemStack stack) {

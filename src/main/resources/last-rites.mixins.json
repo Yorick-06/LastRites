@@ -3,7 +3,10 @@
 	"package": "cz.yorick.mixin",
 	"compatibilityLevel": "JAVA_17",
 	"mixins": [
-		"BundleAccessor"
+		"BundleAccessor",
+		"FallingBlockAccessor",
+		"EnchantmentHelperMixin",
+		"LivingEntityMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1

@@ -1,8 +1,14 @@
 {
+  "block.last-rites.antimagic_catalyst": "Antimagic Catalyst",
   "block.last-rites.brazier": "Brazier",
   "block.last-rites.clay_urn": "Clay Urn",
   "block.last-rites.soul_ash": "Soul Ash",
+  "effect.last-rites.grief": "Grief",
+  "entity.last-rites.damned_one": "Damned One",
   "item.last-rites.curseblade": "Curseblade",
   "item.last-rites.eldritch_urn": "Eldritch Urn",
-  "item_group.last-rites": "Last Rites"
+  "item_group.last-rites": "Last Rites",
+  "tooltip.last-rites.bonus_reach": "Bonus Reach",
+  "tooltip.last-rites.empty": "Empty",
+  "tooltip.last-rites.soul_ash": "Soul Ash"
 }

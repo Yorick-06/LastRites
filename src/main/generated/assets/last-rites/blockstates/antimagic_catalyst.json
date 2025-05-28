@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "active=false": {
+      "model": "last-rites:block/antimagic_catalyst"
+    },
+    "active=true": {
+      "model": "last-rites:block/antimagic_catalyst_active"
+    }
+  }
+}

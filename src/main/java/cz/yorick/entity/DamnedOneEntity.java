@@ -1,28 +1,44 @@
 package cz.yorick.entity;
 
+import cz.yorick.LastRites;
+import cz.yorick.block.SoulAshBlock;
+import cz.yorick.mixin.FallingBlockAccessor;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.FallingBlock;
 import net.minecraft.entity.*;
 import net.minecraft.entity.ai.control.MoveControl;
 import net.minecraft.entity.ai.goal.Goal;
 import net.minecraft.entity.ai.goal.LookAtEntityGoal;
+import net.minecraft.entity.ai.goal.MoveToTargetPosGoal;
 import net.minecraft.entity.ai.goal.SwimGoal;
+import net.minecraft.entity.attribute.DefaultAttributeContainer;
+import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.data.TrackedDataHandler;
 import net.minecraft.entity.data.TrackedDataHandlerRegistry;
+import net.minecraft.entity.mob.HostileEntity;
 import net.minecraft.entity.mob.MobEntity;
+import net.minecraft.entity.mob.PathAwareEntity;
+import net.minecraft.entity.mob.VexEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.ChunkSectionPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
+import net.minecraft.world.WorldView;
+import net.minecraft.world.chunk.Chunk;
+import net.minecraft.world.chunk.ChunkStatus;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.EnumSet;
 
-public class DamnedOneEntity extends MobEntity implements Ownable {
+public class DamnedOneEntity extends PathAwareEntity implements Ownable {
     private static final TrackedData<Animation> ANIMATION;
     static {
         TrackedDataHandler<Animation> handler = TrackedDataHandler.ofEnum(Animation.class);
@@ -31,13 +47,8 @@ public class DamnedOneEntity extends MobEntity implements Ownable {
     }
     private PlayerEntity owner;
     private boolean isCharging;
-    //private boolean isShooting;
-    public AnimationState idleAnimationState = new AnimationState();
-    public AnimationState moveAnimationState = new AnimationState();
-    public AnimationState attackingAnimationState = new AnimationState();
-    public AnimationState animatingAnimationState = new AnimationState();
-    public AnimationState grabbingAnimationState = new AnimationState();
-    public DamnedOneEntity(EntityType<? extends MobEntity> entityType, World world) {
+    public AnimationState animationState = new AnimationState();
+    public DamnedOneEntity(EntityType<? extends PathAwareEntity> entityType, World world) {
         super(entityType, world);
         this.moveControl = new VexMoveControl(this);
     }
@@ -50,7 +61,7 @@ public class DamnedOneEntity extends MobEntity implements Ownable {
 
     @Nullable
     @Override
-    public Entity getOwner() {
+    public PlayerEntity getOwner() {
         return this.owner;
     }
 
@@ -61,15 +72,20 @@ public class DamnedOneEntity extends MobEntity implements Ownable {
     @Nullable
     @Override
     public LivingEntity getTarget() {
-        return this.owner != null ? this.owner.getAttacking() : null;
+        if(this.owner != null && !(this.owner.getAttacking() instanceof DamnedOneEntity)) {
+            return this.owner.getAttacking();
+        }
+
+        return null;
     }
 
     @Override
     protected void initGoals() {
         super.initGoals();
         this.goalSelector.add(0, new SwimGoal(this));
-        //this.goalSelector.add(2, new ShootMissileGoal());
-        this.goalSelector.add(4, new ChargeTargetGoal());
+        this.goalSelector.add(2, new ChargeTargetGoal());
+        this.goalSelector.add(4, new GrabEntityGoal());
+        this.goalSelector.add(6, new AnimateAshGoal(this));
         this.goalSelector.add(8, new LookAtTargetGoal());
         this.goalSelector.add(9, new LookAtEntityGoal(this, PlayerEntity.class, 3.0F, 1.0F));
         this.goalSelector.add(10, new LookAtEntityGoal(this, MobEntity.class, 8.0F));
@@ -84,40 +100,36 @@ public class DamnedOneEntity extends MobEntity implements Ownable {
         return null;
     }
 
+    //always take control
+    @Nullable
+    @Override
+    public LivingEntity getControllingPassenger() {
+        return null;
+    }
+
+    @Override
+    protected void updatePassengerPosition(Entity passenger, PositionUpdater positionUpdater) {
+        if (this.hasPassenger(passenger)) {
+            Vec3d entityPos = getPos();
+            double y = entityPos.getY() + this.getMountedHeightOffset() + passenger.getHeightOffset();
+            double x = entityPos.getX() + Math.sin(Math.toRadians(this.bodyYaw));
+            double z = entityPos.getZ() + Math.cos(Math.toRadians(this.bodyYaw));
+            positionUpdater.accept(passenger, x, y, z);
+        }
+    }
+
+    @Override
+    public double getMountedHeightOffset() {
+        return 0.5;
+    }
+
+    public static DefaultAttributeContainer.Builder createDamnedOneAttributes() {
+        return HostileEntity.createHostileAttributes().add(EntityAttributes.GENERIC_MAX_HEALTH, 20.0).add(EntityAttributes.GENERIC_ATTACK_DAMAGE, 4.0);
+    }
+
     public void onTrackedDataSet(TrackedData<?> data) {
         if (ANIMATION.equals(data)) {
-            switch (this.getAnimation()) {
-                case IDLE -> {
-                    //System.out.println("Starting idle");
-                    this.moveAnimationState.stop();
-                    this.animatingAnimationState.stop();
-                    this.grabbingAnimationState.stop();
-                    this.idleAnimationState.start(this.age);
-                }
-                case MOVING -> {
-                    //System.out.println("Starting move");
-                    this.idleAnimationState.stop();
-                    this.animatingAnimationState.stop();
-                    this.grabbingAnimationState.stop();
-                    this.moveAnimationState.start(this.age);
-                }
-                case ATTACKING -> {
-                    //System.out.println("Starting attack");
-                    this.idleAnimationState.stop();
-                    this.moveAnimationState.stop();
-                    this.animatingAnimationState.stop();
-                    this.grabbingAnimationState.stop();
-                    this.attackingAnimationState.start(this.age);
-                }
-                case ANIMATING -> {
-                    System.out.println("Starting animating");
-                    this.animatingAnimationState.start(this.age);
-                }
-                case GRABBING -> {
-                    System.out.println("Starting grabbing");
-                    this.grabbingAnimationState.start(this.age);
-                }
-            }
+            this.animationState.start(this.age);
         }
 
         super.onTrackedDataSet(data);
@@ -131,57 +143,137 @@ public class DamnedOneEntity extends MobEntity implements Ownable {
         return this.dataTracker.get(ANIMATION);
     }
 
-    private enum Animation {
+    public enum Animation {
         IDLE,
         MOVING,
         ATTACKING,
         ANIMATING,
         GRABBING;
     }
-    /*
-    private class ShootMissileGoal extends Goal {
-        private final int maxCastTime = 2 * 20;
-        private int castTime;
-        public ShootMissileGoal() {
-            this.setControls(EnumSet.of(Control.MOVE));
+
+
+    @Override
+    public void onDeath(DamageSource damageSource) {
+        Vec3d pos = getBlockPos().toCenterPos();
+        getWorld().spawnEntity(FallingBlockAccessor.init(getWorld(), pos.getX(), pos.getY(), pos.getZ(), LastRites.SOUL_ASH.getDefaultState().with(SoulAshBlock.LAYERS, 4)));
+        super.onDeath(damageSource);
+    }
+
+    private class AnimateAshGoal extends MoveToTargetPosGoal {
+        private final int requiredTime = 100;
+        private int animatingTime;
+        private boolean prevReached = false;
+        public AnimateAshGoal(PathAwareEntity mob) {
+            super(mob, 1, 32, 10);
+        }
+
+        @Override
+        protected void startMovingToTarget() {
+            Vec3d pos = this.targetPos.up().toCenterPos();
+            DamnedOneEntity.this.moveControl.moveTo(pos.getX(), pos.getY(), pos.getZ(), 1);
+        }
+
+        @Override
+        public void tick() {
+            super.tick();
+            if(hasReached()) {
+                if(!this.prevReached) {
+                    DamnedOneEntity.this.setAnimation(Animation.ANIMATING);
+                    this.prevReached = true;
+                }
+
+                this.animatingTime++;
+                if(this.animatingTime > this.requiredTime) {
+                    //validate block again, can crash (possibly if two entities animate it in the exact same tick or idk)
+                    if(getWorld() instanceof ServerWorld serverWorld && isTargetPos(serverWorld, this.targetPos)) {
+                        SoulAshBlock.animate(serverWorld, this.targetPos, serverWorld.getBlockState(this.targetPos), getOwner());
+                        this.animatingTime = 0;
+                    }
+                }
+            } else {
+                //it can overshoot the pos, so if it stopped but has not reached the pos try again
+                if(!DamnedOneEntity.this.moveControl.isMoving()) {
+                    startMovingToTarget();
+                }
+
+                this.prevReached = false;
+                this.animatingTime = 0;
+            }
+        }
+
+        @Override
+        protected boolean isTargetPos(WorldView world, BlockPos pos) {
+            Chunk chunk = world.getChunk(ChunkSectionPos.getSectionCoord(pos.getX()), ChunkSectionPos.getSectionCoord(pos.getZ()), ChunkStatus.FULL, false);
+            if (chunk == null) {
+                return false;
+            }
+
+            BlockState state = chunk.getBlockState(pos);
+            return state.isOf(LastRites.SOUL_ASH) && state.get(SoulAshBlock.LAYERS) > 3;
+        }
+
+        @Override
+        public void stop() {
+            DamnedOneEntity.this.setAnimation(Animation.IDLE);
+        }
+    }
+
+    private class GrabEntityGoal extends ChargeTargetGoal {
+        private boolean grabbed = false;
+        private Vec3d dropPos = null;
+
+        @Override
+        public void tick() {
+            if(!this.grabbed) {
+                LivingEntity target = DamnedOneEntity.this.getTarget();
+                if (target != null) {
+                    if (DamnedOneEntity.this.getBoundingBox().intersects(target.getBoundingBox())) {
+                        target.startRiding(DamnedOneEntity.this);
+                        DamnedOneEntity.this.setAnimation(Animation.GRABBING);
+                        this.grabbed = true;
+                        this.dropPos = DamnedOneEntity.this.getPos().add(randomOffset(), 20, randomOffset());
+                    } else {
+                        double distanceToTarget = DamnedOneEntity.this.squaredDistanceTo(target);
+                        if (distanceToTarget < 9.0) {
+                            Vec3d vec3d = target.getEyePos();
+                            DamnedOneEntity.this.moveControl.moveTo(vec3d.x, vec3d.y, vec3d.z, 1.0);
+                        }
+                    }
+                }
+            } else {
+                DamnedOneEntity.this.moveControl.moveTo(this.dropPos.getX(), this.dropPos.getY(), this.dropPos.getZ(), 1);
+                //in position
+                if(this.dropPos.isInRange(DamnedOneEntity.this.getPos(), 1)) {
+                    DamnedOneEntity.this.removeAllPassengers();
+                    DamnedOneEntity.this.isCharging = false;
+                }
+            }
+        }
+
+        private double randomOffset() {
+            return (4 * DamnedOneEntity.this.random.nextDouble()) - 2;
         }
 
         @Override
         public boolean canStart() {
             LivingEntity target = DamnedOneEntity.this.getTarget();
-            if (target != null && target.isAlive() && !DamnedOneEntity.this.getMoveControl().isMoving() && DamnedOneEntity.this.random.nextInt(toGoalTicks(7)) == 0) {
-                return DamnedOneEntity.this.squaredDistanceTo(target) > 10.0;
-            } else {
-                return false;
-            }
-        }
-
-        public boolean shouldContinue() {
-            return DamnedOneEntity.this.isShooting && DamnedOneEntity.this.getTarget() != null && DamnedOneEntity.this.getTarget().isAlive() && this.castTime < this.maxCastTime;
-        }
-
-        @Override
-        public void start() {
-            this.castTime = 0;
-            DamnedOneEntity.this.isShooting = true;
+            return target != null && target.isAlive() && !DamnedOneEntity.this.getMoveControl().isMoving() && DamnedOneEntity.this.random.nextInt(toGoalTicks(7)) == 0;
         }
 
         @Override
         public void stop() {
-            this.castTime = 0;
-            DamnedOneEntity.this.isShooting = false;
+            super.stop();
+            DamnedOneEntity.this.removeAllPassengers();
+            DamnedOneEntity.this.setAnimation(Animation.IDLE);
         }
 
         @Override
-        public void tick() {
-            this.castTime++;
-            //finished casting
-            if(this.castTime == this.maxCastTime) {
-                DamnedOneEntity.this.getWorld().spawnEntity(new ShulkerBulletEntity(DamnedOneEntity.this.getWorld(), DamnedOneEntity.this, DamnedOneEntity.this.getTarget(), Direction.Axis.pickRandomAxis(getRandom())));
-                DamnedOneEntity.this.playSound(SoundEvents.ENTITY_SHULKER_SHOOT, 2.0F, (DamnedOneEntity.this.random.nextFloat() - DamnedOneEntity.this.random.nextFloat()) * 0.2F + 1.0F);
-            }
+        public void start() {
+            super.start();
+            this.grabbed = false;
+            this.dropPos = null;
         }
-    }*/
+    }
 
     //---------------------------------------------------------------------------------------------------------------------------
     //everything below is a vex copy - cannot extend VexEntity since it implements Ownable but forces the owner to be a MobEntity
@@ -212,6 +304,9 @@ public class DamnedOneEntity extends MobEntity implements Ownable {
         super.tick();
         this.noClip = false;
         this.setNoGravity(true);
+        if(this.owner != null && this.owner.isRemoved()) {
+            this.kill();
+        }
     }
 
     private class VexMoveControl extends MoveControl {
@@ -242,22 +337,17 @@ public class DamnedOneEntity extends MobEntity implements Ownable {
                 }
             }
 
-            //started moving
-            if(this.state == State.MOVE_TO && this.prevState != State.MOVE_TO) {
+            //started moving and has the idle anim (dont override grab/animate)
+            if(this.state == State.MOVE_TO && this.prevState != State.MOVE_TO && DamnedOneEntity.this.getAnimation() == Animation.IDLE) {
                 DamnedOneEntity.this.setAnimation(Animation.MOVING);
             }
 
-            //stopped moving
-            if(this.state != State.MOVE_TO && this.prevState == State.MOVE_TO) {
+            //stopped moving and has the move anim (dont override grab/animate)
+            if(this.state != State.MOVE_TO && this.prevState == State.MOVE_TO && DamnedOneEntity.this.getAnimation() == Animation.MOVING) {
                 DamnedOneEntity.this.setAnimation(Animation.IDLE);
             }
 
-            this.prevState = state;
-        }
-
-        @Override
-        public void moveTo(double x, double y, double z, double speed) {
-            super.moveTo(x, y, z, speed);
+            this.prevState = this.state;
         }
     }
 
@@ -276,7 +366,7 @@ public class DamnedOneEntity extends MobEntity implements Ownable {
         }
 
         public boolean shouldContinue() {
-            return DamnedOneEntity.this.getMoveControl().isMoving() && DamnedOneEntity.this.isCharging && DamnedOneEntity.this.getTarget() != null && DamnedOneEntity.this.getTarget().isAlive();
+            return DamnedOneEntity.this.moveControl.isMoving() && DamnedOneEntity.this.isCharging && DamnedOneEntity.this.getTarget() != null && DamnedOneEntity.this.getTarget().isAlive();
         }
 
         public void start() {
