@@ -14,7 +14,6 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.state.StateManager;
-import net.minecraft.state.property.BooleanProperty;
 import net.minecraft.state.property.IntProperty;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
@@ -22,12 +21,10 @@ import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.math.random.Random;
 import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.util.shape.VoxelShapes;
 import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
-import net.minecraft.world.WorldAccess;
 import net.minecraft.world.WorldView;
 import org.jetbrains.annotations.Nullable;
 
@@ -133,11 +130,15 @@ public class SoulAshBlock extends FallingBlock {
     @Override
     public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
         if(player.getStackInHand(hand).isOf(Items.FLINT_AND_STEEL) && state.get(LAYERS) > 3) {
+            Vec3d origin = pos.toCenterPos();
             if(player instanceof ServerPlayerEntity serverPlayer && world instanceof ServerWorld serverWorld) {
-                world.playSound(player, pos, SoundEvents.ITEM_FLINTANDSTEEL_USE, SoundCategory.BLOCKS, 1.0F, world.getRandom().nextFloat() * 0.4F + 0.8F);
                 player.getStackInHand(hand).damage(1, serverPlayer, p -> p.sendToolBreakStatus(hand));
+                serverWorld.spawnParticles(ParticleTypes.SOUL_FIRE_FLAME, origin.getX(), origin.getY(), origin.getZ(), 10, 0.5, 0.5, 0.5, 0.1);
                 animate(serverWorld, pos, state, player);
             }
+
+            world.playSound(player, pos, SoundEvents.ITEM_FLINTANDSTEEL_USE, SoundCategory.BLOCKS, 1.0F, world.getRandom().nextFloat() * 0.4F + 0.8F);
+            world.playSound(player, pos, SoundEvents.ENTITY_BLAZE_SHOOT, SoundCategory.BLOCKS, 1.0F, 0);
 
             return ActionResult.SUCCESS;
         }

@@ -37,7 +37,7 @@ public class BrazierBlockEntity extends BlockEntity {
             blockEntity.progress++;
             if(blockEntity.progress >= blockEntity.maxProgress) {
                 int ashAmount = 0;
-                Optional<ItemStack> maybeRemoved = BundleAccessor.removeFirstStack(blockEntity.urn);
+                Optional<ItemStack> maybeRemoved = BundleAccessor.invokeRemoveFirstStack(blockEntity.urn);
                 while(maybeRemoved.isPresent()) {
                     ItemStack removed = maybeRemoved.get();
                     //add all present ash
@@ -54,10 +54,10 @@ public class BrazierBlockEntity extends BlockEntity {
                     }
 
                     //remove next item
-                    maybeRemoved = BundleAccessor.removeFirstStack(blockEntity.urn);
+                    maybeRemoved = BundleAccessor.invokeRemoveFirstStack(blockEntity.urn);
                 }
 
-                BundleAccessor.addToBundle(blockEntity.urn, new ItemStack(LastRites.SOUL_ASH, ashAmount));
+                BundleAccessor.invokeAddToBundle(blockEntity.urn, new ItemStack(LastRites.SOUL_ASH, ashAmount));
                 world.setBlockState(pos, state.with(BrazierBlock.URN, BrazierBlock.UrnType.FINISHED));
                 blockEntity.progress = 0;
             }

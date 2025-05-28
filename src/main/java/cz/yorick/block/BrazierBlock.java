@@ -82,12 +82,14 @@ public class BrazierBlock extends BlockWithEntity {
 
         //right-click with soul sand/soil to turn it into a soul fire
         if(handStack.isOf(Items.SOUL_SAND) || handStack.isOf(Items.SOUL_SOIL) && state.get(FIRE) == FireType.FIRE) {
+            world.playSound(player, pos, SoundEvents.BLOCK_SOUL_SAND_PLACE, SoundCategory.BLOCKS, 1.0F, world.getRandom().nextFloat() * 0.4F + 0.8F);
             world.setBlockState(pos, state.with(FIRE, FireType.SOUL_FIRE));
             return ActionResult.SUCCESS;
         }
 
         //extinguish the brazier
         if(state.get(FIRE) != FireType.NONE && handStack.isOf(Items.WATER_BUCKET)) {
+            world.playSound(player, pos, SoundEvents.BLOCK_FIRE_EXTINGUISH, SoundCategory.BLOCKS, 1.0F, world.getRandom().nextFloat() * 0.4F + 0.8F);
             world.setBlockState(pos, state.with(FIRE, FireType.NONE));
             player.setStackInHand(hand, BucketItem.getEmptiedStack(handStack, player));
             return ActionResult.SUCCESS;
@@ -95,6 +97,7 @@ public class BrazierBlock extends BlockWithEntity {
 
         //place the urn
         if(handStack.isOf(LastRites.ELDRITCH_URN) && !hasUrn(state)) {
+            world.playSound(player, pos, SoundEvents.BLOCK_DECORATED_POT_PLACE, SoundCategory.BLOCKS, 1.0F, world.getRandom().nextFloat() * 0.4F + 0.8F);
             world.setBlockState(pos, state.with(URN, UrnType.URN));
             player.setStackInHand(hand, ItemStack.EMPTY);
             ((BrazierBlockEntity)world.getBlockEntity(pos)).placeUrn(handStack);
@@ -103,6 +106,7 @@ public class BrazierBlock extends BlockWithEntity {
 
         //take the urn
         if(handStack.isEmpty() && hasUrn(state)) {
+            world.playSound(player, pos, SoundEvents.BLOCK_DECORATED_POT_BREAK, SoundCategory.BLOCKS, 1.0F, world.getRandom().nextFloat() * 0.4F + 0.8F);
             world.setBlockState(pos, state.with(URN, UrnType.NONE));
             player.setStackInHand(hand, ((BrazierBlockEntity)world.getBlockEntity(pos)).takeUrn());
             return ActionResult.SUCCESS;

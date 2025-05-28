@@ -10,12 +10,12 @@ import java.util.Optional;
 @Mixin(BundleItem.class)
 public interface BundleAccessor {
 	@Invoker("addToBundle")
-	static int addToBundle(ItemStack bundle, ItemStack stack) {
+	static int invokeAddToBundle(ItemStack bundle, ItemStack stack) {
 		throw new UnsupportedOperationException("Implemented via mixin!");
 	}
 
 	@Invoker("removeFirstStack")
-	static Optional<ItemStack> removeFirstStack(ItemStack stack) {
+	static Optional<ItemStack> invokeRemoveFirstStack(ItemStack stack) {
 		throw new UnsupportedOperationException("Implemented via mixin!");
 	}
 }

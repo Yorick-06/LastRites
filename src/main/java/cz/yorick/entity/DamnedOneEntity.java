@@ -3,9 +3,11 @@ package cz.yorick.entity;
 import cz.yorick.LastRites;
 import cz.yorick.block.SoulAshBlock;
 import cz.yorick.mixin.FallingBlockAccessor;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.FallingBlock;
 import net.minecraft.entity.*;
+import net.minecraft.entity.ai.control.LookControl;
 import net.minecraft.entity.ai.control.MoveControl;
 import net.minecraft.entity.ai.goal.Goal;
 import net.minecraft.entity.ai.goal.LookAtEntityGoal;
@@ -23,9 +25,12 @@ import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.entity.mob.VexEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.sound.SoundEvents;
+import net.minecraft.util.TypeFilter;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkSectionPos;
 import net.minecraft.util.math.MathHelper;
@@ -114,6 +119,7 @@ public class DamnedOneEntity extends PathAwareEntity implements Ownable {
             double y = entityPos.getY() + this.getMountedHeightOffset() + passenger.getHeightOffset();
             double x = entityPos.getX() + Math.sin(Math.toRadians(this.bodyYaw));
             double z = entityPos.getZ() + Math.cos(Math.toRadians(this.bodyYaw));
+            passenger.setYaw(this.getYaw() - 180);
             positionUpdater.accept(passenger, x, y, z);
         }
     }
@@ -275,6 +281,15 @@ public class DamnedOneEntity extends PathAwareEntity implements Ownable {
         }
     }
 
+    private static final TypeFilter<Entity, DamnedOneEntity> filter = TypeFilter.instanceOf(DamnedOneEntity.class);
+    public static void ownerLost(ServerPlayerEntity player) {
+        player.getServer().getWorlds().forEach(serverWorld ->
+                serverWorld.getEntitiesByType(filter,
+                        entity -> entity.getOwner() == player
+                ).forEach(DamnedOneEntity::kill)
+        );
+    }
+
     //---------------------------------------------------------------------------------------------------------------------------
     //everything below is a vex copy - cannot extend VexEntity since it implements Ownable but forces the owner to be a MobEntity
     //---------------------------------------------------------------------------------------------------------------------------
@@ -358,7 +373,7 @@ public class DamnedOneEntity extends PathAwareEntity implements Ownable {
 
         public boolean canStart() {
             LivingEntity target = DamnedOneEntity.this.getTarget();
-            if (target != null && target.isAlive() && !DamnedOneEntity.this.getMoveControl().isMoving() && DamnedOneEntity.this.random.nextInt(toGoalTicks(7)) == 0) {
+            if (target != null && target.isAlive() && !DamnedOneEntity.this.getMoveControl().isMoving() && DamnedOneEntity.this.random.nextInt(toGoalTicks(4)) == 0) {
                 return DamnedOneEntity.this.squaredDistanceTo(target) > 4.0;
             } else {
                 return false;

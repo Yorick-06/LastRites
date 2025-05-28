@@ -12,8 +12,9 @@ import cz.yorick.item.CurseBladeItem;
 import cz.yorick.item.EldritchUrnItem;
 import cz.yorick.util.CustomStatusEffect;
 import net.fabricmc.api.ModInitializer;
-
+import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents;
 import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.fabric.api.object.builder.v1.entity.FabricDefaultAttributeRegistry;
 import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.Block;
@@ -25,7 +26,6 @@ import net.minecraft.entity.EntityType;
 import net.minecraft.entity.SpawnGroup;
 import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.effect.StatusEffectInstance;
-import net.minecraft.entity.mob.VexEntity;
 import net.minecraft.item.*;
 import net.minecraft.potion.Potion;
 import net.minecraft.registry.Registries;
@@ -33,6 +33,7 @@ import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.BlockSoundGroup;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
@@ -50,6 +51,13 @@ public class LastRites implements ModInitializer {
 	@Override
 	public void onInitialize() {
 		FabricDefaultAttributeRegistry.register(DAMNED_ONE_ENTITY_TYPE, DamnedOneEntity.createDamnedOneAttributes());
+		//kill all damned ones when their owner disconnects (makes them turn into a pile of ash)
+		ServerPlayConnectionEvents.DISCONNECT.register((handler, server) -> DamnedOneEntity.ownerLost(handler.getPlayer()));
+		ServerLivingEntityEvents.AFTER_DEATH.register((entity, damageSource) -> {
+			if(entity instanceof ServerPlayerEntity serverPlayer) {
+				DamnedOneEntity.ownerLost(serverPlayer);
+			}
+		});
 	}
 
 	public static final Block SOUL_ASH = register("soul_ash", new SoulAshBlock(AbstractBlock.Settings.create().strength(0.1F).sounds(BlockSoundGroup.SOUL_SAND)), true);
