@@ -238,6 +238,7 @@ public class DamnedOneEntity extends PathAwareEntity implements Ownable {
                         DamnedOneEntity.this.setAnimation(Animation.GRABBING);
                         this.grabbed = true;
                         this.dropPos = DamnedOneEntity.this.getPos().add(randomOffset(), 20, randomOffset());
+                        DamnedOneEntity.this.moveControl.moveTo(this.dropPos.getX(), this.dropPos.getY(), this.dropPos.getZ(), 0.5);
                     } else {
                         double distanceToTarget = DamnedOneEntity.this.squaredDistanceTo(target);
                         if (distanceToTarget < 9.0) {
@@ -247,7 +248,6 @@ public class DamnedOneEntity extends PathAwareEntity implements Ownable {
                     }
                 }
             } else {
-                DamnedOneEntity.this.moveControl.moveTo(this.dropPos.getX(), this.dropPos.getY(), this.dropPos.getZ(), 1);
                 //in position
                 if(this.dropPos.isInRange(DamnedOneEntity.this.getPos(), 1)) {
                     DamnedOneEntity.this.removeAllPassengers();
@@ -270,7 +270,6 @@ public class DamnedOneEntity extends PathAwareEntity implements Ownable {
         public void stop() {
             super.stop();
             DamnedOneEntity.this.removeAllPassengers();
-            DamnedOneEntity.this.setAnimation(Animation.IDLE);
         }
 
         @Override
@@ -397,6 +396,7 @@ public class DamnedOneEntity extends PathAwareEntity implements Ownable {
 
         public void stop() {
             DamnedOneEntity.this.isCharging = false;
+            DamnedOneEntity.this.setAnimation(Animation.IDLE);
         }
 
         public boolean shouldRunEveryTick() {
