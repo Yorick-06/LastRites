@@ -6,16 +6,13 @@
       "item": "minecraft:iron_bars"
     },
     "C": {
-      "item": "minecraft:coal_block"
-    },
-    "S": {
-      "item": "minecraft:cobblestone"
+      "tag": "minecraft:coals"
     }
   },
   "pattern": [
     "   ",
     "BCB",
-    "SSS"
+    "BBB"
   ],
   "result": {
     "item": "last-rites:brazier"

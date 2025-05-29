@@ -4,12 +4,15 @@
   "key": {
     "S": {
       "item": "minecraft:netherite_scrap"
+    },
+    "U": {
+      "item": "last-rites:clay_urn"
     }
   },
   "pattern": [
-    "S S",
-    "S S",
-    "SSS"
+    " S ",
+    "SUS",
+    " S "
   ],
   "result": {
     "item": "last-rites:eldritch_urn"

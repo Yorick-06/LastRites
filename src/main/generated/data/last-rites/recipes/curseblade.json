@@ -6,13 +6,13 @@
       "item": "last-rites:soul_ash"
     },
     "S": {
-      "item": "minecraft:stick"
+      "item": "minecraft:diamond_sword"
     }
   },
   "pattern": [
     " A ",
-    " A ",
-    " S "
+    "ASA",
+    " A "
   ],
   "result": {
     "item": "last-rites:curseblade"
