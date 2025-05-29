@@ -6,7 +6,9 @@
 		"EntityRenderDispatcherMixin",
 		"ClientPlayerInteractionManagerMixin",
 		"GameRendererAccessor",
-		"LivingEntityMixin"
+		"LivingEntityMixin",
+		"BipedEntityModelMixin",
+		"IllagerEntityModelMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1

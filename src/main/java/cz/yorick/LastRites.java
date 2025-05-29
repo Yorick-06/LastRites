@@ -10,7 +10,7 @@ import cz.yorick.entity.DamnedOneEntity;
 import cz.yorick.item.ClayUrnItem;
 import cz.yorick.item.CurseBladeItem;
 import cz.yorick.item.EldritchUrnItem;
-import cz.yorick.util.CustomStatusEffect;
+import cz.yorick.effect.GriefStatusEffect;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents;
 import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup;
@@ -72,15 +72,18 @@ public class LastRites implements ModInitializer {
 	public static final Item CLAY_URN_ITEM = register("clay_urn", new ClayUrnItem(CLAY_URN, new Item.Settings()));
 	public static final Item CURSEBLADE = register("curseblade", new CurseBladeItem(ToolMaterials.DIAMOND, 2, -2.4F, new Item.Settings()));
 
-	public static final StatusEffect GRIEF_EFFECT = Registry.register(Registries.STATUS_EFFECT, Identifier.of(MOD_ID, "grief"), new CustomStatusEffect());
-	public static final StatusEffect ANTIMAGIC_EFFECT = Registry.register(Registries.STATUS_EFFECT, Identifier.of(MOD_ID, "antimagic"), new CustomStatusEffect());
+	public static final StatusEffect GRIEF_EFFECT = Registry.register(Registries.STATUS_EFFECT, Identifier.of(MOD_ID, "grief"), new GriefStatusEffect());
 
 	public static final Potion GRIEF_POTION = Registry.register(Registries.POTION, Identifier.of(MOD_ID, "grief"), new Potion("grief", new StatusEffectInstance(GRIEF_EFFECT, 600)));
 
 	public static final ItemGroup ITEM_GROUP = Registry.register(Registries.ITEM_GROUP, Identifier.of(MOD_ID, MOD_ID), FabricItemGroup.builder()
 			.displayName(Text.translatable("item_group.last-rites"))
 			.icon(() -> new ItemStack(ELDRITCH_URN))
-			.entries((displayContext, entries) -> getOwned(Registries.ITEM).forEach(item -> entries.add(new ItemStack(item))))
+			.entries((displayContext, entries) -> getOwned(Registries.ITEM).forEach(item -> {
+				if(item != ANTIMAGIC_CATALYST.asItem()) {
+					entries.add(new ItemStack(item));
+				}
+			}))
 			.build()
 	);
 

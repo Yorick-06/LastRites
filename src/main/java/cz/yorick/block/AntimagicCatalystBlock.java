@@ -10,6 +10,8 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.sound.SoundCategory;
+import net.minecraft.sound.SoundEvents;
 import net.minecraft.state.StateManager;
 import net.minecraft.state.property.BooleanProperty;
 import net.minecraft.util.ActionResult;
@@ -54,8 +56,9 @@ public class AntimagicCatalystBlock extends BlockWithEntity {
     @Override
     public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
         ItemStack handStack = player.getStackInHand(hand);
-        if(world instanceof ServerWorld && handStack.isOf(LastRites.SOUL_ASH.asItem()) && ((AntimagicCatalystBlockEntity)world.getBlockEntity(pos)).canActivate() && AntimagicCatalystBlockEntity.locateFires(world, pos).size() >= 12) {
+        if(world instanceof ServerWorld serverWorld && handStack.isOf(LastRites.SOUL_ASH.asItem()) && ((AntimagicCatalystBlockEntity)world.getBlockEntity(pos)).canActivate() && AntimagicCatalystBlockEntity.locateFires(world, pos).size() >= 12) {
             world.setBlockState(pos, state.with(ACTIVE, true));
+            serverWorld.playSound(null, pos, SoundEvents.ENTITY_WITHER_SPAWN, SoundCategory.BLOCKS, 1.0F + world.getRandom().nextFloat(), world.getRandom().nextFloat() * 0.7F + 0.3F);
             if(!player.isCreative()) {
                 handStack.decrement(1);
             }

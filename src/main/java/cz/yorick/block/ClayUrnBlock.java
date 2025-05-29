@@ -2,7 +2,7 @@ package cz.yorick.block;
 
 import cz.yorick.LastRites;
 import cz.yorick.item.ClayUrnItem;
-import cz.yorick.util.CustomStatusEffect;
+import cz.yorick.effect.GriefStatusEffect;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.ShapeContext;
@@ -54,7 +54,7 @@ public class ClayUrnBlock extends Block {
             }
 
             //2002 == non-instant potion break
-            world.syncWorldEvent(2002, pos, CustomStatusEffect.COLOR);
+            world.syncWorldEvent(2002, pos, GriefStatusEffect.COLOR);
         }
 
         super.onBreak(world, pos, state, player);

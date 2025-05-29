@@ -56,14 +56,15 @@ public class AntimagicCatalystBlockEntity extends BlockEntity {
             blockEntity.progress = 0;
             BlockPos extinguished = fires.get((int) ((fires.size() - 1) * world.random.nextDouble()));
             extinguish(world, extinguished);
+            /*
             Vec3d origin = pos.toCenterPos();
             serverWorld.getPlayers().forEach(serverPlayer -> {
                 if (origin.isInRange(serverPlayer.getPos(), 100)) {
                     serverPlayer.addStatusEffect(new StatusEffectInstance(LastRites.ANTIMAGIC_EFFECT, 12 * 20));
                 }
-            });
+            });*/
 
-            world.playSound(origin.getX(), origin.getY(), origin.getZ(), SoundEvents.ENTITY_WITHER_SPAWN, SoundCategory.BLOCKS, 1.0F + world.getRandom().nextFloat(), world.getRandom().nextFloat() * 0.7F + 0.3F, false);
+            serverWorld.playSound(null, pos, SoundEvents.ENTITY_WITHER_SPAWN, SoundCategory.BLOCKS, 1.0F + world.getRandom().nextFloat(), world.getRandom().nextFloat() * 0.7F + 0.3F);
         }
     }
 

@@ -52,14 +52,5 @@ public class RecipeGenerator extends FabricRecipeProvider {
                 .input('S', Items.COBBLESTONE)
                 .criterion(hasItem(Items.COBBLESTONE), conditionsFromItem(Items.COBBLESTONE))
                 .offerTo(exporter);
-
-        ShapedRecipeJsonBuilder.create(RecipeCategory.MISC, LastRites.ANTIMAGIC_CATALYST)
-                .pattern("AAA")
-                .pattern("ASA")
-                .pattern("AAA")
-                .input('A', LastRites.SOUL_ASH)
-                .input('S', Items.NETHER_STAR)
-                .criterion(hasItem(Items.NETHER_STAR), conditionsFromItem(Items.NETHER_STAR))
-                .offerTo(exporter);
     }
 }
