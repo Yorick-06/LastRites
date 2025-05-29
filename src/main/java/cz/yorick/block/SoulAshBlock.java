@@ -130,15 +130,10 @@ public class SoulAshBlock extends FallingBlock {
     @Override
     public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
         if(player.getStackInHand(hand).isOf(Items.FLINT_AND_STEEL) && state.get(LAYERS) > 3) {
-            Vec3d origin = pos.toCenterPos();
             if(player instanceof ServerPlayerEntity serverPlayer && world instanceof ServerWorld serverWorld) {
                 player.getStackInHand(hand).damage(1, serverPlayer, p -> p.sendToolBreakStatus(hand));
-                serverWorld.spawnParticles(ParticleTypes.SOUL_FIRE_FLAME, origin.getX(), origin.getY(), origin.getZ(), 10, 0.5, 0.5, 0.5, 0.1);
                 animate(serverWorld, pos, state, player);
             }
-
-            world.playSound(player, pos, SoundEvents.ITEM_FLINTANDSTEEL_USE, SoundCategory.BLOCKS, 1.0F, world.getRandom().nextFloat() * 0.4F + 0.8F);
-            world.playSound(player, pos, SoundEvents.ENTITY_BLAZE_SHOOT, SoundCategory.BLOCKS, 1.0F, 0);
 
             return ActionResult.SUCCESS;
         }
@@ -160,6 +155,11 @@ public class SoulAshBlock extends FallingBlock {
         } else {
             world.setBlockState(pos, state.with(LAYERS, layers));
         }
+
+        world.playSound(null, pos, SoundEvents.ITEM_FLINTANDSTEEL_USE, SoundCategory.BLOCKS, 1.0F, world.getRandom().nextFloat() * 0.4F + 0.8F);
+        world.playSound(null, pos, SoundEvents.ENTITY_BLAZE_SHOOT, SoundCategory.BLOCKS, 1.0F, 0);
+        Vec3d origin = pos.toCenterPos();
+        world.spawnParticles(ParticleTypes.SOUL_FIRE_FLAME, origin.getX(), origin.getY(), origin.getZ(), 10, 0.5, 0.5, 0.5, 0.1);
     }
 
     public static void consumeLayer(World world, BlockPos pos) {
