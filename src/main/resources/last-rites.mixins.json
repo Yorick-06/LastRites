@@ -5,7 +5,8 @@
 	"mixins": [
 		"BundleAccessor",
 		"FallingBlockAccessor",
-		"PlayerEntityMixin"
+		"PlayerEntityMixin",
+		"ProjectileUtilMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1

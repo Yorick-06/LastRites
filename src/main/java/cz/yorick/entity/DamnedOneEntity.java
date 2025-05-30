@@ -51,7 +51,7 @@ public class DamnedOneEntity extends PathAwareEntity implements Ownable {
         ANIMATION = DataTracker.registerData(DamnedOneEntity.class, handler);
     }
     private PlayerEntity owner;
-    private boolean isCharging;
+    private boolean shouldDrop;
     public AnimationState animationState = new AnimationState();
     public DamnedOneEntity(EntityType<? extends PathAwareEntity> entityType, World world) {
         super(entityType, world);
@@ -88,8 +88,8 @@ public class DamnedOneEntity extends PathAwareEntity implements Ownable {
     protected void initGoals() {
         super.initGoals();
         this.goalSelector.add(0, new SwimGoal(this));
-        this.goalSelector.add(2, new ChargeTargetGoal());
-        this.goalSelector.add(4, new GrabEntityGoal());
+        this.goalSelector.add(2, new ChargeTargetGoal(5));
+        this.goalSelector.add(4, new GrabEntityGoal(10));
         this.goalSelector.add(6, new AnimateAshGoal(this));
         this.goalSelector.add(8, new LookAtTargetGoal());
         this.goalSelector.add(9, new LookAtEntityGoal(this, PlayerEntity.class, 3.0F, 1.0F));
@@ -117,8 +117,8 @@ public class DamnedOneEntity extends PathAwareEntity implements Ownable {
         if (this.hasPassenger(passenger)) {
             Vec3d entityPos = getPos();
             double y = entityPos.getY() + this.getMountedHeightOffset() + passenger.getHeightOffset();
-            double x = entityPos.getX() + Math.sin(Math.toRadians(this.bodyYaw));
-            double z = entityPos.getZ() + Math.cos(Math.toRadians(this.bodyYaw));
+            double x = entityPos.getX() + Math.sin(Math.toRadians(-this.bodyYaw));
+            double z = entityPos.getZ() + Math.cos(Math.toRadians(-this.bodyYaw));
             passenger.setYaw(this.getYaw() - 180);
             positionUpdater.accept(passenger, x, y, z);
         }
@@ -130,7 +130,7 @@ public class DamnedOneEntity extends PathAwareEntity implements Ownable {
     }
 
     public static DefaultAttributeContainer.Builder createDamnedOneAttributes() {
-        return HostileEntity.createHostileAttributes().add(EntityAttributes.GENERIC_MAX_HEALTH, 20.0).add(EntityAttributes.GENERIC_ATTACK_DAMAGE, 4.0);
+        return HostileEntity.createHostileAttributes().add(EntityAttributes.GENERIC_MAX_HEALTH, 20.0).add(EntityAttributes.GENERIC_ATTACK_DAMAGE, 8.0);
     }
 
     public void onTrackedDataSet(TrackedData<?> data) {
@@ -163,6 +163,16 @@ public class DamnedOneEntity extends PathAwareEntity implements Ownable {
         Vec3d pos = getBlockPos().toCenterPos();
         getWorld().spawnEntity(FallingBlockAccessor.init(getWorld(), pos.getX(), pos.getY(), pos.getZ(), LastRites.SOUL_ASH.getDefaultState().with(SoulAshBlock.LAYERS, 4)));
         super.onDeath(damageSource);
+    }
+
+    @Override
+    public boolean damage(DamageSource source, float amount) {
+        boolean damaged = super.damage(source, amount);
+        if(damaged) {
+            this.shouldDrop = true;
+        }
+
+        return damaged;
     }
 
     private class AnimateAshGoal extends MoveToTargetPosGoal {
@@ -227,9 +237,17 @@ public class DamnedOneEntity extends PathAwareEntity implements Ownable {
     private class GrabEntityGoal extends ChargeTargetGoal {
         private boolean grabbed = false;
         private Vec3d dropPos = null;
+        private GrabEntityGoal(int rarity) {
+            super(rarity);
+        }
 
         @Override
         public void tick() {
+            if(DamnedOneEntity.this.shouldDrop) {
+                //stops the goal and drops the entity
+                this.isCharging = false;
+            }
+
             if(!this.grabbed) {
                 LivingEntity target = DamnedOneEntity.this.getTarget();
                 if (target != null) {
@@ -251,7 +269,7 @@ public class DamnedOneEntity extends PathAwareEntity implements Ownable {
                 //in position
                 if(this.dropPos.isInRange(DamnedOneEntity.this.getPos(), 1)) {
                     DamnedOneEntity.this.removeAllPassengers();
-                    DamnedOneEntity.this.isCharging = false;
+                    this.isCharging = false;
                 }
             }
         }
@@ -261,20 +279,16 @@ public class DamnedOneEntity extends PathAwareEntity implements Ownable {
         }
 
         @Override
-        public boolean canStart() {
-            LivingEntity target = DamnedOneEntity.this.getTarget();
-            return target != null && target.isAlive() && !DamnedOneEntity.this.getMoveControl().isMoving() && DamnedOneEntity.this.random.nextInt(toGoalTicks(7)) == 0;
-        }
-
-        @Override
         public void stop() {
             super.stop();
+            DamnedOneEntity.this.shouldDrop = false;
             DamnedOneEntity.this.removeAllPassengers();
         }
 
         @Override
         public void start() {
             super.start();
+            DamnedOneEntity.this.shouldDrop = false;
             this.grabbed = false;
             this.dropPos = null;
         }
@@ -366,13 +380,16 @@ public class DamnedOneEntity extends PathAwareEntity implements Ownable {
     }
 
     private class ChargeTargetGoal extends Goal {
-        public ChargeTargetGoal() {
+        private final int rarity;
+        protected boolean isCharging;
+        public ChargeTargetGoal(int rarity) {
+            this.rarity = rarity;
             this.setControls(EnumSet.of(Control.MOVE));
         }
 
         public boolean canStart() {
             LivingEntity target = DamnedOneEntity.this.getTarget();
-            if (target != null && target.isAlive() && !DamnedOneEntity.this.getMoveControl().isMoving() && DamnedOneEntity.this.random.nextInt(toGoalTicks(4)) == 0) {
+            if (target != null && target.isAlive() && !DamnedOneEntity.this.getMoveControl().isMoving() && DamnedOneEntity.this.random.nextInt(toGoalTicks(this.rarity)) == 0) {
                 return DamnedOneEntity.this.squaredDistanceTo(target) > 4.0;
             } else {
                 return false;
@@ -380,7 +397,7 @@ public class DamnedOneEntity extends PathAwareEntity implements Ownable {
         }
 
         public boolean shouldContinue() {
-            return DamnedOneEntity.this.moveControl.isMoving() && DamnedOneEntity.this.isCharging && DamnedOneEntity.this.getTarget() != null && DamnedOneEntity.this.getTarget().isAlive();
+            return DamnedOneEntity.this.moveControl.isMoving() && this.isCharging && DamnedOneEntity.this.getTarget() != null && DamnedOneEntity.this.getTarget().isAlive();
         }
 
         public void start() {
@@ -390,12 +407,12 @@ public class DamnedOneEntity extends PathAwareEntity implements Ownable {
                 DamnedOneEntity.this.moveControl.moveTo(vec3d.x, vec3d.y, vec3d.z, 1.0);
             }
 
-            DamnedOneEntity.this.isCharging = true;
+            this.isCharging = true;
             DamnedOneEntity.this.playSound(SoundEvents.ENTITY_VEX_CHARGE, 1.0F, 1.0F);
         }
 
         public void stop() {
-            DamnedOneEntity.this.isCharging = false;
+            this.isCharging = false;
             DamnedOneEntity.this.setAnimation(Animation.IDLE);
         }
 
@@ -409,7 +426,7 @@ public class DamnedOneEntity extends PathAwareEntity implements Ownable {
                 if (DamnedOneEntity.this.getBoundingBox().intersects(target.getBoundingBox())) {
                     DamnedOneEntity.this.tryAttack(target);
                     DamnedOneEntity.this.setAnimation(Animation.ATTACKING);
-                    DamnedOneEntity.this.isCharging = false;
+                    this.isCharging = false;
                 } else {
                     double distanceToTarget = DamnedOneEntity.this.squaredDistanceTo(target);
                     if (distanceToTarget < 9.0) {
