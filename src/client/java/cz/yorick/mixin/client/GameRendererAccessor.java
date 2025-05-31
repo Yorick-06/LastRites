@@ -9,7 +9,4 @@ import org.spongepowered.asm.mixin.gen.Invoker;
 public interface GameRendererAccessor {
     @Invoker("loadPostProcessor")
     void invokeLoadPostProcessor(Identifier id);
-
-    @Invoker("disablePostProcessor")
-    void invokeDisablePostProcessor();
 }

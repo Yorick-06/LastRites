@@ -21,7 +21,7 @@ public class LivingEntityMixin {
     @Inject(method = "onStatusEffectApplied", at = @At("HEAD"))
     protected void applyGriefShader(StatusEffectInstance effect, @Nullable Entity source, CallbackInfo info) {
         if ((Object) this instanceof ClientPlayerEntity && effect.getEffectType() == LastRites.GRIEF_EFFECT) {
-            ((GameRendererAccessor) MinecraftClient.getInstance().gameRenderer).invokeLoadPostProcessor(new Identifier("shaders/post/desaturate.json"));
+            MinecraftClient.getInstance().gameRenderer.onCameraEntitySet(MinecraftClient.getInstance().getCameraEntity());
         }
     }
 
@@ -29,7 +29,7 @@ public class LivingEntityMixin {
     @Inject(method = "removeStatusEffectInternal", at = @At("HEAD"))
     protected void removeGriefShader(StatusEffect type, CallbackInfoReturnable<StatusEffectInstance> info) {
         if ((Object) this instanceof ClientPlayerEntity && type == LastRites.GRIEF_EFFECT) {
-            ((GameRendererAccessor) MinecraftClient.getInstance().gameRenderer).invokeDisablePostProcessor();
+            MinecraftClient.getInstance().gameRenderer.disablePostProcessor();
         }
     }
 }
