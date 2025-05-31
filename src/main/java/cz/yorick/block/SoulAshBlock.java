@@ -143,7 +143,7 @@ public class SoulAshBlock extends FallingBlock {
 
     public static void animate(ServerWorld world, BlockPos pos, BlockState state, PlayerEntity owner) {
         int layers = state.get(LAYERS);
-        while (layers > 1) {
+        while (layers >= 4) {
             LastRites.DAMNED_ONE_ENTITY_TYPE.spawn(world, null, spawned -> {
                 spawned.setOwner(owner);
             }, pos, SpawnReason.TRIGGERED, false, false);
