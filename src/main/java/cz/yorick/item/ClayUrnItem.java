@@ -59,7 +59,13 @@ public class ClayUrnItem extends BlockItem {
     public ActionResult useOnBlock(ItemUsageContext context) {
         if(context.getWorld().getBlockState(context.getBlockPos()).isOf(LastRites.SOUL_ASH) && !isFilled(context.getStack())) {
             SoulAshBlock.consumeLayer(context.getWorld(), context.getBlockPos());
-            fill(context.getStack(), context.getPlayer());
+
+            ItemStack output = context.getStack().copy();
+            output.setCount(1);
+            output.getOrCreateNbt().putBoolean("filled", true);
+            context.getStack().decrement(1);
+            context.getPlayer().getInventory().offerOrDrop(output);
+
             context.getPlayer().incrementStat(Stats.USED.getOrCreateStat(this));
             return ActionResult.SUCCESS;
         }
@@ -70,12 +76,6 @@ public class ClayUrnItem extends BlockItem {
         }
 
         return ActionResult.PASS;
-    }
-
-    public void fill(ItemStack stack, PlayerEntity player) {
-        ItemStack newStack = new ItemStack(this);
-        newStack.getOrCreateNbt().putBoolean("filled", true);
-        ItemUsage.exchangeStack(stack, player, newStack);
     }
 
     public static boolean isFilled(ItemStack stack) {
