@@ -142,6 +142,31 @@ public class SoulAshBlock extends FallingBlock {
         return super.onUse(state, world, pos, player, hand, hit);
     }
 
+    @Override
+    public void onStateReplaced(BlockState state, World world, BlockPos pos, BlockState newState, boolean moved) {
+        super.onStateReplaced(state, world, pos, newState, moved);
+        //dont have enough layers and another soul ash block (which we could potentially steal from) is above
+        if(newState.isOf(LastRites.SOUL_ASH)) {
+            int layers = newState.get(LAYERS);
+            BlockPos abovePos = pos.up();
+            BlockState aboveState = world.getBlockState(abovePos);
+            if (layers < MAX_LAYERS && aboveState.isOf(LastRites.SOUL_ASH)) {
+                int missingLayers = MAX_LAYERS - layers;
+                int aboveLayers = aboveState.get(LAYERS);
+                //remove top block and add to bottom
+                if (missingLayers >= aboveLayers) {
+                    world.setBlockState(abovePos, Blocks.AIR.getDefaultState());
+                    world.setBlockState(pos, newState.with(LAYERS, layers + aboveLayers));
+                } else {
+                    //remove missing layers from the top
+                    world.setBlockState(abovePos, aboveState.with(LAYERS, aboveLayers - missingLayers));
+                    //add to the bottom (will always be max since otherwise the top would get removed)
+                    world.setBlockState(pos, newState.with(LAYERS, MAX_LAYERS));
+                }
+            }
+        }
+    }
+
     public static void animate(ServerWorld world, BlockPos pos, BlockState state, PlayerEntity owner) {
         int layers = state.get(LAYERS);
         while (layers >= 4) {
