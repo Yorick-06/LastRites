@@ -31,7 +31,8 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Objects;
 
 public class SoulAshBlock extends FallingBlock {
-    public static final IntProperty LAYERS = IntProperty.of("layers", 1, 8);
+    public static final int MAX_LAYERS = 8;
+    public static final IntProperty LAYERS = IntProperty.of("layers", 1, MAX_LAYERS);
     private static final VoxelShape[] LAYERS_TO_SHAPE = new VoxelShape[] {
             VoxelShapes.empty(),
             Block.createCuboidShape(0.0, 0.0, 0.0, 16.0, 2.0, 16.0),
@@ -64,7 +65,7 @@ public class SoulAshBlock extends FallingBlock {
 
     @Override
     public VoxelShape getCollisionShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context) {
-        return LAYERS_TO_SHAPE[state.get(LAYERS) - 1];
+        return LAYERS_TO_SHAPE[state.get(LAYERS)];
     }
 
     @Override
@@ -84,7 +85,7 @@ public class SoulAshBlock extends FallingBlock {
 
     @Override
     public float getAmbientOcclusionLightLevel(BlockState state, BlockView world, BlockPos pos) {
-        return state.get(LAYERS) == 8 ? 0.2F : 1.0F;
+        return state.get(LAYERS) == MAX_LAYERS ? 0.2F : 1.0F;
     }
 
     @Override
@@ -95,13 +96,13 @@ public class SoulAshBlock extends FallingBlock {
         } else if (blockState.isIn(BlockTags.SNOW_LAYER_CAN_SURVIVE_ON)) {
             return true;
         } else {
-            return Block.isFaceFullSquare(blockState.getCollisionShape(world, pos.down()), Direction.UP) || blockState.isOf(this) && blockState.get(LAYERS) == 8;
+            return Block.isFaceFullSquare(blockState.getCollisionShape(world, pos.down()), Direction.UP) || blockState.isOf(this) && blockState.get(LAYERS) == MAX_LAYERS;
         }
     }
 
     @Override
     public boolean canReplace(BlockState state, ItemPlacementContext context) {
-        if (context.getStack().isOf(this.asItem()) && state.get(LAYERS) < 8) {
+        if (context.getStack().isOf(this.asItem()) && state.get(LAYERS) < MAX_LAYERS) {
             if (context.canReplaceExisting()) {
                 return context.getSide() == Direction.UP;
             } else {
@@ -116,7 +117,7 @@ public class SoulAshBlock extends FallingBlock {
     public BlockState getPlacementState(ItemPlacementContext ctx) {
         BlockState blockState = ctx.getWorld().getBlockState(ctx.getBlockPos());
         if (blockState.isOf(this)) {
-            return blockState.with(LAYERS, Math.min(8, blockState.get(LAYERS) + 1));
+            return blockState.with(LAYERS, Math.min(MAX_LAYERS, blockState.get(LAYERS) + 1));
         } else {
             return super.getPlacementState(ctx);
         }

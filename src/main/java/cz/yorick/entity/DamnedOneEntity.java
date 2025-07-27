@@ -2,12 +2,9 @@ package cz.yorick.entity;
 
 import cz.yorick.LastRites;
 import cz.yorick.block.SoulAshBlock;
-import cz.yorick.mixin.FallingBlockAccessor;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
+import cz.yorick.mixin.FallingBlockEntityAccessor;
 import net.minecraft.block.BlockState;
-import net.minecraft.block.FallingBlock;
 import net.minecraft.entity.*;
-import net.minecraft.entity.ai.control.LookControl;
 import net.minecraft.entity.ai.control.MoveControl;
 import net.minecraft.entity.ai.goal.Goal;
 import net.minecraft.entity.ai.goal.LookAtEntityGoal;
@@ -23,9 +20,7 @@ import net.minecraft.entity.data.TrackedDataHandlerRegistry;
 import net.minecraft.entity.mob.HostileEntity;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.mob.PathAwareEntity;
-import net.minecraft.entity.mob.VexEntity;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvent;
@@ -161,7 +156,7 @@ public class DamnedOneEntity extends PathAwareEntity implements Ownable {
     @Override
     public void onDeath(DamageSource damageSource) {
         Vec3d pos = getBlockPos().toCenterPos();
-        getWorld().spawnEntity(FallingBlockAccessor.init(getWorld(), pos.getX(), pos.getY(), pos.getZ(), LastRites.SOUL_ASH.getDefaultState().with(SoulAshBlock.LAYERS, 4)));
+        getWorld().spawnEntity(FallingBlockEntityAccessor.init(getWorld(), pos.getX(), pos.getY(), pos.getZ(), LastRites.SOUL_ASH.getDefaultState().with(SoulAshBlock.LAYERS, 4)));
         super.onDeath(damageSource);
     }
 
