@@ -11,7 +11,6 @@ import net.minecraft.entity.attribute.EntityAttribute;
 import net.minecraft.entity.attribute.EntityAttributeModifier;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.effect.StatusEffectInstance;
-import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUsageContext;
 import net.minecraft.item.SwordItem;
@@ -27,7 +26,6 @@ import java.util.List;
 import java.util.UUID;
 
 public class CurseBladeItem extends SwordItem {
-    public static final String SOUL_ASH_TRANSLATION_KEY = "tooltip." + LastRites.MOD_ID + ".soul_ash";
     public static final String BONUS_REACH_TRANSLATION_KEY = "tooltip." + LastRites.MOD_ID + ".bonus_reach";
     private static final int MAX_LAYERS = 16;
     private static final UUID STAGE_BONUS_UUID = UUID.fromString("44ee2e6e-ad5e-4af1-9cb8-cad57d20063f");
@@ -72,7 +70,7 @@ public class CurseBladeItem extends SwordItem {
 
     @Override
     public void appendTooltip(ItemStack stack, @Nullable World world, List<Text> tooltip, TooltipContext context) {
-        tooltip.add(Text.translatable(SOUL_ASH_TRANSLATION_KEY).append(": " + getLayers(stack)).formatted(Formatting.GRAY));
+        tooltip.add(Text.translatable(ClayUrnItem.SOUL_ASH_TRANSLATION_KEY).append(": " + getLayers(stack)).formatted(Formatting.GRAY));
         tooltip.add(Text.translatable(BONUS_REACH_TRANSLATION_KEY).append(": " + getBonusReach(stack)).formatted(Formatting.GRAY));
     }
 

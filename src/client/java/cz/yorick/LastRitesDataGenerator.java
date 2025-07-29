@@ -41,11 +41,16 @@ public class LastRitesDataGenerator implements DataGeneratorEntrypoint {
 
 				translationBuilder.add("item_group.last-rites", "Last Rites");
 
-				translationBuilder.add(CurseBladeItem.SOUL_ASH_TRANSLATION_KEY, autoTranslate(CurseBladeItem.SOUL_ASH_TRANSLATION_KEY));
-				translationBuilder.add(CurseBladeItem.BONUS_REACH_TRANSLATION_KEY, autoTranslate(CurseBladeItem.BONUS_REACH_TRANSLATION_KEY));
-				translationBuilder.add(ClayUrnItem.EMPTY_TRANSLATION_KEY, autoTranslate(ClayUrnItem.EMPTY_TRANSLATION_KEY));
+				autoTranslate(translationBuilder, CurseBladeItem.BONUS_REACH_TRANSLATION_KEY);
+				autoTranslate(translationBuilder, ClayUrnItem.EMPTY_TRANSLATION_KEY);
+				autoTranslate(translationBuilder, ClayUrnItem.SOUL_ASH_TRANSLATION_KEY);
+				autoTranslate(translationBuilder, ClayUrnItem.DAMNED_ONE_TRANSLATION_KEY);
 			}
 		};
+	}
+
+	private static void autoTranslate(FabricLanguageProvider.TranslationBuilder translationBuilder, String translationKey) {
+		translationBuilder.add(translationKey, autoTranslate(translationKey));
 	}
 
 	private static String autoTranslate(String translationKey) {
